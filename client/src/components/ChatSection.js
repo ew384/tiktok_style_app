@@ -1,3 +1,4 @@
+// client/src/components/ChatSection.js (修改版)
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Input, Button, Avatar, Spin } from 'antd';
@@ -84,6 +85,12 @@ const LoadingContainer = styled.div`
   margin: 20px 0;
 `;
 
+const EmptyMessages = styled.div`
+  text-align: center;
+  color: #999;
+  margin-top: 20px;
+`;
+
 const ChatSection = ({ contentId }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -97,31 +104,64 @@ const ChatSection = ({ contentId }) => {
         setMessages([]);
 
         if (contentId) {
+            console.log(`加载内容ID为 ${contentId} 的消息`);
             setLoading(true);
+
+            // 允许为视频生成默认消息，即使没有在数据库中找到
+            const defaultMessages = [
+                {
+                    contentId: contentId,
+                    user: {
+                        id: 'system',
+                        username: '系统消息',
+                        avatar: 'https://via.placeholder.com/40?text=系统'
+                    },
+                    text: '欢迎来到讨论区，这里可以讨论有关该视频的内容。',
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    contentId: contentId,
+                    user: {
+                        id: 'system',
+                        username: '提示',
+                        avatar: 'https://via.placeholder.com/40?text=提示'
+                    },
+                    text: '请文明发言，共建和谐社区。',
+                    timestamp: new Date(Date.now() - 3600000).toISOString()
+                }
+            ];
+
             fetchMessages(contentId)
                 .then(data => {
-                    setMessages(data);
+                    setMessages(data.length > 0 ? data : defaultMessages);
                     setLoading(false);
                     scrollToBottom();
                 })
                 .catch(error => {
-                    console.error('Failed to fetch messages:', error);
+                    console.error('加载消息失败:', error);
+                    // 使用默认消息
+                    setMessages(defaultMessages);
                     setLoading(false);
+                    scrollToBottom();
                 });
 
             // 设置Socket.io连接
-            socketRef.current = io('/chat');
+            try {
+                socketRef.current = io('/chat');
 
-            // 监听新消息
-            socketRef.current.on('message', message => {
-                if (message.contentId === contentId) {
-                    setMessages(prev => [...prev, message]);
-                    scrollToBottom();
-                }
-            });
+                // 监听新消息
+                socketRef.current.on('message', message => {
+                    if (message.contentId === contentId) {
+                        setMessages(prev => [...prev, message]);
+                        scrollToBottom();
+                    }
+                });
 
-            // 加入特定内容的聊天室
-            socketRef.current.emit('join', { contentId });
+                // 加入特定内容的聊天室
+                socketRef.current.emit('join', { contentId });
+            } catch (error) {
+                console.error('Socket连接失败:', error);
+            }
 
             return () => {
                 if (socketRef.current) {
@@ -149,13 +189,31 @@ const ChatSection = ({ contentId }) => {
             timestamp: new Date().toISOString()
         };
 
-        socketRef.current.emit('message', message);
+        try {
+            if (socketRef.current) {
+                socketRef.current.emit('message', message);
+            } else {
+                // 如果socket连接失败，直接更新本地消息列表
+                setMessages(prev => [...prev, message]);
+                scrollToBottom();
+            }
+        } catch (error) {
+            console.error('发送消息失败:', error);
+            // 即使发送失败，也更新本地消息列表，提升用户体验
+            setMessages(prev => [...prev, message]);
+            scrollToBottom();
+        }
+
         setNewMessage('');
     };
 
     const formatTime = (timestamp) => {
-        const date = new Date(timestamp);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        try {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch (error) {
+            return '未知时间';
+        }
     };
 
     return (
@@ -168,22 +226,28 @@ const ChatSection = ({ contentId }) => {
                     </LoadingContainer>
                 ) : (
                     <>
-                        {messages.map((message, index) => (
-                            <MessageBubble
-                                key={index}
-                                isOwn={message.user.id === user?.id}
-                            >
-                                <Avatar src={message.user.avatar} alt={message.user.username} />
-                                <MessageContent isOwn={message.user.id === user?.id}>
-                                    <MessageText isOwn={message.user.id === user?.id}>
-                                        {message.text}
-                                    </MessageText>
-                                    <MessageTime isOwn={message.user.id === user?.id}>
-                                        {formatTime(message.timestamp)}
-                                    </MessageTime>
-                                </MessageContent>
-                            </MessageBubble>
-                        ))}
+                        {messages.length === 0 ? (
+                            <EmptyMessages>
+                                暂无评论，来发表第一条评论吧！
+                            </EmptyMessages>
+                        ) : (
+                            messages.map((message, index) => (
+                                <MessageBubble
+                                    key={index}
+                                    isOwn={message.user.id === user?.id}
+                                >
+                                    <Avatar src={message.user.avatar} alt={message.user.username} />
+                                    <MessageContent isOwn={message.user.id === user?.id}>
+                                        <MessageText isOwn={message.user.id === user?.id}>
+                                            {message.text}
+                                        </MessageText>
+                                        <MessageTime isOwn={message.user.id === user?.id}>
+                                            {formatTime(message.timestamp)}
+                                        </MessageTime>
+                                    </MessageContent>
+                                </MessageBubble>
+                            ))
+                        )}
                         <div ref={messagesEndRef} />
                     </>
                 )}

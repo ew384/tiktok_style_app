@@ -1,4 +1,4 @@
-/* VideoPlayer.css - 仅包含视频播放相关样式 */
+/* VideoPlayer.css - 更新后的版本，支持TikTok视频展示 */
 .video-container {
     width: 100%;
     height: 100%;
@@ -47,7 +47,8 @@
     background-color: #000;
 }
 
-video {
+video,
+iframe {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -126,4 +127,213 @@ video {
     background-color: #fe2c55;
     border-radius: 2px;
     width: 0%;
+}
+
+/* 视频信息显示 */
+.video-info {
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    width: 70%;
+    padding: 0 20px;
+    color: white;
+    z-index: 20;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.video-info h3 {
+    margin: 0;
+    font-size: 16px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.video-info p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+    word-break: break-word;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.video-source {
+    margin-top: 5px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* 视频操作按钮 */
+.video-actions {
+    position: absolute;
+    right: 20px;
+    bottom: 100px;
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.action-btn svg {
+    width: 32px;
+    height: 32px;
+    fill: white;
+    margin-bottom: 5px;
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.action-count {
+    font-size: 12px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* 视频指示器 */
+.video-indicator {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    z-index: 30;
+}
+
+.indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    margin: 3px 0;
+    transition: all 0.2s ease;
+}
+
+.indicator-dot.active {
+    background-color: #fff;
+    transform: scale(1.2);
+}
+
+/* 滑动提示 */
+.swipe-tip {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 25;
+    opacity: 0.8;
+    animation: fadeOut 3s forwards;
+    animation-delay: 2s;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 0.8;
+    }
+
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+/* 底部导航栏 */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #999;
+    font-size: 10px;
+}
+
+.nav-item.active {
+    color: #fff;
+}
+
+.nav-icon {
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+/* 抖音标记 */
+.douyin-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 25;
+    opacity: 0.8;
+}
+
+.douyin-badge img {
+    width: 24px;
+    height: 24px;
+}
+
+/* 错误状态下的重试按钮 */
+.video-container.error button {
+    margin-top: 20px;
+    background-color: #fe2c55;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.video-container.error button:hover {
+    background-color: #e61e4d;
+}
+
+/* 加载中的文字样式 */
+.video-container.loading>div {
+    margin-top: 20px;
+    color: #fff;
+    font-size: 16px;
+}
+
+/* 视频控制条优化 */
+video::-webkit-media-controls {
+    display: none !important;
+}
+
+video::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+
+/* 自定义视频控制 - 确保在全屏模式下也能看到视频信息 */
+.video-wrapper.fullscreen .video-info,
+.video-wrapper.fullscreen .video-actions,
+.video-wrapper.fullscreen .douyin-badge {
+    z-index: 2147483647;
 }

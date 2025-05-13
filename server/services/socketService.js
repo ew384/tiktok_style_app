@@ -1,3 +1,4 @@
+// server/services/socketService.js (修改版)
 const Message = require('../models/Message');
 const jwt = require('jsonwebtoken');
 
@@ -28,23 +29,38 @@ module.exports = function (io) {
 
         // 加入特定内容的聊天室
         socket.on('join', ({ contentId }) => {
-            socket.join(contentId);
+            if (!contentId) {
+                socket.emit('error', { message: 'Content ID is required' });
+                return;
+            }
+
+            socket.join(contentId.toString());
             console.log(`User joined room: ${contentId}`);
         });
 
         // 离开聊天室
         socket.on('leave', ({ contentId }) => {
-            socket.leave(contentId);
-            console.log(`User left room: ${contentId}`);
+            if (contentId) {
+                socket.leave(contentId.toString());
+                console.log(`User left room: ${contentId}`);
+            }
         });
 
         // 接收并广播消息
         socket.on('message', async (message) => {
             try {
+                if (!message.contentId) {
+                    socket.emit('error', { message: 'Content ID is required' });
+                    return;
+                }
+
+                // 确保contentId是字符串
+                const contentId = message.contentId.toString();
+
                 // 如果用户已登录，保存消息到数据库
                 if (socket.user) {
                     const newMessage = new Message({
-                        contentId: message.contentId,
+                        contentId: contentId,
                         user: {
                             id: socket.user.id,
                             username: socket.user.username,
@@ -58,16 +74,17 @@ module.exports = function (io) {
                     await newMessage.save();
 
                     // 广播保存的消息
-                    chatNamespace.to(message.contentId).emit('message', newMessage);
+                    chatNamespace.to(contentId).emit('message', newMessage);
                 } else {
                     // 匿名用户消息直接广播但不保存
-                    chatNamespace.to(message.contentId).emit('message', {
-                        ...message,
+                    chatNamespace.to(contentId).emit('message', {
+                        contentId: contentId,
                         user: {
                             id: 'anonymous',
                             username: '游客',
                             avatar: 'https://via.placeholder.com/150?text=Guest'
                         },
+                        text: message.text,
                         timestamp: new Date().toISOString()
                     });
                 }

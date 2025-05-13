@@ -1,10 +1,13 @@
+// server/controllers/chatController.js (修改版)
 const Message = require('../models/Message');
+const mongoose = require('mongoose');
 
 // 获取内容的消息
 exports.getMessages = async (req, res) => {
     try {
         const { contentId } = req.params;
 
+        // 不再需要验证contentId是否为有效的ObjectId
         const messages = await Message.find({ contentId })
             .sort({ timestamp: 1 })
             .limit(100);
@@ -52,6 +55,11 @@ exports.deleteMessage = async (req, res) => {
     try {
         const { messageId } = req.params;
         const userId = req.user.id;
+
+        // 确保messageId是有效的ObjectId
+        if (!mongoose.Types.ObjectId.isValid(messageId)) {
+            return res.status(400).json({ message: 'Invalid message ID format' });
+        }
 
         const message = await Message.findById(messageId);
 

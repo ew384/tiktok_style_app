@@ -1,9 +1,9 @@
+// server/models/Message.js (修改版)
 const mongoose = require('mongoose');
 
 const MessageSchema = new mongoose.Schema({
     contentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Content',
+        type: String,  // 改为String类型，而不是ObjectId
         required: true
     },
     user: {
