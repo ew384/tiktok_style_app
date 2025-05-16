@@ -101,7 +101,7 @@ exports.getSampleVideos = async (req, res) => {
 function getDefaultVideos() {
     return [
         {
-            url: "https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4",
+            url: "https://www.douyin.com/video/7499043704997432576",
             thumbnail: "https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-HD.jpg",
             title: "View From A Blue Moon",
             author: "Demo User",

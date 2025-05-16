@@ -14,7 +14,7 @@ const userRoutes = require('./routes/userRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const authRoutes = require('./routes/authRoutes');
-const videoRoutes = require('./routes/videoRoutes'); // 旧版视频路由
+// const videoRoutes = require('./routes/tiktokRoutes'); // 旧版视频路由
 const tiktokRoutes = require('./routes/tiktokRoutes'); // 新版TikTok路由
 
 // 创建Express应用
@@ -41,7 +41,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/video', videoRoutes); // 旧版视频处理路由
 app.use('/api/tiktok', tiktokRoutes); // 新版TikTok视频处理路由
 
 // 处理Socket.io连接
